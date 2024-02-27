@@ -1,6 +1,6 @@
 ---
-title: "Post-Quantum Cryptography enhancement in EAP-AKA'"
-abbrev: "PQC in EAP-AKA'"
+title: "Post-Quantum Cryptography enhancement in EAP-AKA prime"
+abbrev: "PQC in EAP-AKA prime"
 category: std
 
 docname: draft-ar-emu-pqc-eapaka
@@ -122,6 +122,8 @@ The generated ss from KEMdecaps along with traditional shared secret of ECHDE us
       EMSK = MK_HYBRID [768..1279]
 
 # IANA Considerations
+
+IANA considerations
 
 --- back
 
