@@ -1,7 +1,7 @@
 ---
 title: "Post-Quantum Cryptography enhancement in EAP-AKA'"
 abbrev: "PQC in EAP-AKA'"
-category: info
+category: std
 
 docname: draft-ar-emu-pqc-eapaka
 submissiontype: IETF
@@ -42,8 +42,14 @@ author:
     email: "kondtir@gmail.com"
 
 normative:
+   RFC9048:
+   RFC8037:
+   RFC6090:
+   RFC9052:
 
 informative:
+
+
 
 --- abstract
 
@@ -80,7 +86,7 @@ As described in the draft {{?I-D.draft-ietf-emu-aka-pfs-11}}, the UDM has the EA
 
 MK_ECDHE = PRF'(IK'|CK'|SHARED_SECRET,"EAP-AKA' FS"| Identity).
 
-# PQC Enhancements in Design
+# PQC Enhancements by Design
 
 We suggest the following changes and enhancements:
 - New attributes will be defined to carry the PQC KEM Public Key of HN_pk and UE_ct (cipher text) 
@@ -121,6 +127,8 @@ The generated ss from KEMdecaps along with traditional shared secret of ECHDE us
 
 # IANA Considerations
 
-# Acknowledgement
+--- back
+
+# Acknowledgements
 This draft leverages text from {{?I-D.draft-ietf-emu-aka-pfs-11}}
 
