@@ -42,10 +42,6 @@ author:
     email: "kondtir@gmail.com"
 
 normative:
-   RFC9048:
-   RFC8037:
-   RFC6090:
-   RFC9052:
 
 informative:
 
