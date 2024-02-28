@@ -82,7 +82,9 @@ PQ/T Hybrid Key Encapsulation Mechanism: A Key Encapsulation mechanism (KEM) mad
 
 As described in the draft {{?I-D.draft-ietf-emu-aka-pfs-11}}, the UDM has the EAP identity of UE. The UDM runs AKA algorithm to generate RAND, AUTN, XRES, CK and IK. Further it also derives CK’ and IK’ keys which are tied to a serving network name. The UDM now generates the ephemeral key pair and sends the public key of that key pair and the first EAP method message to the UE. In this EAP message, AT_PUB_ECDHE (carries public key) and the AT_KDF_FS(carries other FS related parameters). Both of these might be ignored of UE doesn’t support the Forward Secrecy extension. The UE checks if it wants to have a Forward extension in EAP AKA'. If yes, then it will eventually respond with AT_PUB_ECDHE and MAC. If not, it will ignore AT_PUB_ECDHE. If UE wants to participate in FS extension, it will then generate its ECDH key pair, calculate a shared key based on its private key and UDM public key. The UDM will receive the RES from UE and AT_PUB_ECDHE. The shared key will be generated in UE and UDM with key pairs exchanged, and later master key is also generated.
 
-MK_ECDHE = PRF'(concat(IK',CK', SHARED_SECRET),concat("EAP-AKA' FS", Identity))
+~~~
+MK_ECDHE = PRF'(IK'| CK'|SHARED_SECRET,"EAP-AKA' FS"|Identity)
+~~~
 
 # PQC Enhancements by Design
 
@@ -119,12 +121,14 @@ The KEM combiner can also be a "hash and concatenation" based approach to use a 
 
 The generated ss from KEMdecaps along with traditional shared secret of ECHDE used as input to KEM combiner to generate the hybrid shared secret Ks. The UE and AUSF first generate the MK_HYBRID and subsequently generate MSK, EMSK as shown below:
 
-MK_HYBRID = PRF'(IK'|CK'| HYBRID_SHARED_SECRET,"EAP-AKA' FS"| Identity) 
+~~~
+   MK_HYBRID = PRF'(IK'|CK'| HYBRID_SHARED_SECRET,"EAP-AKA' FS"| Identity) 
    K_encr = MK[0..127]
    K_aut = MK[128..383]
    K_re = MK_HYBRID [0..255] 
    MSK = MK_HYBRID [256..767] 
    EMSK = MK_HYBRID [768..1279]
+~~~
 
 # IANA Considerations
 
