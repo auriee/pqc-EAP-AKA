@@ -49,10 +49,9 @@ informative:
 
 --- abstract
 
+Forward Secrecy for the Extensible Authentication Protocol Method for Authentication and Key Agreement (EAP-AKA' FS) is specified in {{I-D.draft-ietf-emu-aka-pfs}}, providing updates to {{RFC9048}} with an optional extension that offers ephemeral key exchange using the traditional Ephemeral Elliptic Curve Diffie-Hellman (ECDHE) key agreement algorithm for achieving perfect forward secrecy (PFS). However, it is susceptible to future threats from Cryptographically Relevant Quantum Computers, which could potentially compromise a traditional ephemeral public key. If the adversary has also obtained knowledge of the long-term key and ephemeral public key, it could compromise session keys generated as part of the authentication run in EAP-AKA'.
 
-The threat from CRQCs (Cryptographically relevant Quantum Computers) to public key cryptographic algorithms is quite real as is pervasive monitoring attacks that arise from this encryption breaking capability. These attacks develop over a period of time (Also termed as Harvest Now Decrypt Later attack) and are immune to perfect forward secrecy as well. An adversary can break a public key in the future even with perfect forward secrecy (PFS). if the adversary has also obtained knowledge of the long-term key, they could then compute the session keys as well as the shared secret, and any derived output keys.
-
-This draft acknowledges the work done in {{?I-D.draft-ietf-emu-aka-pfs-11}} with regards to achieveing EAP-AKA' in perfect forward secrecy and aims to make the EAP-AKA' protocol defined in {{?RFC9048}} quantum-safe.
+This draft aims to enhance the security of EAP-AKA' FS making it quantum-safe.
 
 --- middle
 
