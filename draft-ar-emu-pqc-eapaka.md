@@ -91,7 +91,7 @@ As described in the draft {{?I-D.draft-ietf-emu-aka-pfs-11}}, the UDM has the EA
 MK_ECDHE = PRF'(IK'| CK'|SHARED_SECRET,"EAP-AKA' FS"|Identity)
 ~~~
 
-# PQC Enhancements by Design
+# Hybrid Enhancements by Design
 
 We suggest the following changes and enhancements:
 - A new attribute will be defined to carry the public key that is the concatenation of traditional and PQC KEM public keys.
