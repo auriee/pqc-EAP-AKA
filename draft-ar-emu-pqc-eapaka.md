@@ -94,9 +94,10 @@ MK_ECDHE = PRF'(IK'| CK'|SHARED_SECRET,"EAP-AKA' FS"|Identity)
 # PQC Enhancements by Design
 
 We suggest the following changes and enhancements:
-- New attributes will be defined to carry the PQC KEM Public Key of HN_pk and UE_ct (cipher text) 
-- New AT_KDF_FS attribute to indicate the key derivation function for Hybrid Master Key MK_HYBRID.
-- Multiple AT_KDF_FS attributes will be included to handle the EAP peer not supporting PQC. 
+- A new attribute will be defined to carry the public key that is the concatenation of traditional and PQC KEM public keys.
+- A new attribute will be defined to carry the encapsulated key, which is the concatenation of the encapsulated key (enc) from the traditional Key Encapsulation Mechanism (KEM) algorithm and the ciphertext (ct) from the Post-Quantum Cryptography (PQC) KEM Encapsulation function.
+- A new AT_KDF_FS attribute to indicate the HPKE KEM and HKDF for generating the Hybrid Master Key MK_HYBRID.
+- Multiple AT_KDF_FS attributes will be included to handle the EAP peer not supporting HPKE Hybrid KEM. 
 - The Hybrid key derivation function will be included first to indicate higher priority than the traditional key derivation function.
 
 # Protocol Construction
@@ -127,6 +128,8 @@ The KEM combiner can also be a "hash and concatenation" based approach to use a 
 The generated ss from KEMdecaps along with traditional shared secret of ECHDE used as input to KEM combiner to generate the hybrid shared secret Ks. The UE and AUSF first generate the MK_HYBRID and subsequently generate MSK, EMSK as shown below:
 
 ~~~
+   MK = PRF'(IK'|CK',"EAP-AKA'"|Identity)
+   HYBRID_SHARED_SECRET, enc = Encap(pKR)  //pkR is public key of receiver. enc is encapsulated key. 
    MK_HYBRID = PRF'(IK'|CK'| HYBRID_SHARED_SECRET,"EAP-AKA' FS"| Identity) 
    K_encr = MK[0..127]
    K_aut = MK[128..383]
