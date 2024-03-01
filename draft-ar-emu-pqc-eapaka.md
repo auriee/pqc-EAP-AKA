@@ -95,9 +95,12 @@ MK_ECDHE = PRF'(IK'| CK'|SHARED_SECRET,"EAP-AKA' FS"|Identity)
 
 We suggest the following changes and enhancements:
 - A new attribute will be defined to carry the public key that is the concatenation of traditional and PQC KEM public keys.
+
 - A new attribute will be defined to carry the encapsulated key, which is the concatenation of the encapsulated key (enc) from the traditional Key Encapsulation Mechanism (KEM) algorithm and the ciphertext (ct) from the Post-Quantum Cryptography (PQC) KEM Encapsulation function.
+
 - A new AT_KDF_FS attribute to indicate the HPKE KEM and HKDF for generating the Hybrid Master Key MK_HYBRID.
-- Multiple AT_KDF_FS attributes will be included to handle the EAP peer not supporting HPKE Hybrid KEM. 
+- Multiple AT_KDF_FS attributes will be included to handle the EAP peer not supporting HPKE Hybrid KEM.
+
 - The Hybrid key derivation function will be included first to indicate higher priority than the traditional key derivation function.
 
 # Protocol Construction
