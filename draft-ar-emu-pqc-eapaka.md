@@ -143,8 +143,9 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
       |      | pair, sends the hybrid (PQC + ECDHE) public key of that|
       |      | key pair and the first EAP method message to the peer  |
       |      | In the message the AT_PUB_Hybrid attribute             |
-      |      | carries the public key and the AT_KDF_FS attribute     |
-      |      | carries other FS-related parameters. Both of these are |
+      |      | carries the concatenation of ECDHE and PQC KEM public  |
+      |      | keys and the AT_KDF_FS attribute carries other         |
+      |      | FS-related parameters. Both of these are               |
       |      | skippable attributes that can be ignored if the peer   |
       |      | does not support this extension.                       |
       |      +-------+----------------------------+----------------+--+
@@ -172,11 +173,10 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
     +--+--------------+----------------------------+---------+     |
     | The peer now has everything to respond. If it wants to |     |
     | participate in the FS extension, it will then generate |     |
-    | its Hybrid key pair, calculate a hybrid shared key     |     |
-    |  based on its ECDHE and PQC KEM key pairs and the      |     |
-    |  server's hybrid public key. Finally, it proceeds      |     |
-    | to derive all EAP-AKA' key values and constructs a     |     |
-    | full response.                                         |     |
+    | its ECDHE key pair, calculate a hybrid shared secret   |     |
+    | key based on the server's PQC KEM public key and the   |     |
+    | ECDHE secret. Finally, it proceeds to derive all       |     |
+    | EAP-AKA' key values and constructs a full response.    |     |
     +--+--------------+----------------------------+---------+     |
       |              |                            |                |
       |              | EAP-Resp/AKA'-Challenge    |                |
