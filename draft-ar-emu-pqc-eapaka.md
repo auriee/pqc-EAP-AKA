@@ -65,7 +65,7 @@ Nevertheless, EAP-AKA' FS uses traditional algorithms public-key algorithms (e.g
 
 The migration to PQC is unique in the history of modern digital cryptography in that neither the traditional algorithms nor the post-quantum algorithms are fully trusted to protect data for the required data lifetimes. The post-quantum algorithms face uncertainty about the underlying mathematics, compliance issues, unknown vulnerabilities, hardware and software implementations that have not had sufficient maturing time to rule out classical cryptanalytic attacks and implementation bugs. During the transition from traditional to post-quantum algorithms, there is a desire or a requirement for protocols that use both algorithm types.
 
-This specification defines Hybrid public-key encryption (HPKE) {{RFC9048}} for use with EAP-AKA' FS. HPKE offers a variant of public-key encryption of arbitrary-sized plaintexts for a recipient public key. HPKE works for any combination of an asymmetric key encapsulation mechanism (KEM), key derivation function (KDF), and authenticated encryption with additional data (AEAD) function. HPKE can be extended to support hybrid post-quantum Key Encapsulation Mechanisms (KEMs) as defined in {{?I-D.ietf-westerbaan-cfrg-hpke-xyber768d00}}.
+This specification defines Hybrid public-key encryption (HPKE) {{RFC9180}} for use with EAP-AKA' FS. HPKE offers a variant of public-key encryption of arbitrary-sized plaintexts for a recipient public key. HPKE works for any combination of an asymmetric key encapsulation mechanism (KEM), key derivation function (KDF), and authenticated encryption with additional data (AEAD) function. HPKE can be extended to support hybrid post-quantum Key Encapsulation Mechanisms (KEMs) as defined in {{?I-D.ietf-westerbaan-cfrg-hpke-xyber768d00}}.
 
 # Conventions and Definitions
 
@@ -85,7 +85,9 @@ PQ/T Hybrid Key Encapsulation Mechanism: A Key Encapsulation mechanism (KEM) mad
 
 # Background on EAP-AKA' with perfect forward secrecy
 
-As described in the draft {{?I-D.draft-ietf-emu-aka-pfs-11}}, the UDM has the EAP identity of UE. The UDM runs AKA algorithm to generate RAND, AUTN, XRES, CK and IK. Further it also derives CK’ and IK’ keys which are tied to a serving network name. The UDM now generates the ephemeral key pair and sends the public key of that key pair and the first EAP method message to the UE. In this EAP message, AT_PUB_ECDHE (carries public key) and the AT_KDF_FS(carries other FS related parameters). Both of these might be ignored of UE doesn’t support the Forward Secrecy extension. The UE checks if it wants to have a Forward extension in EAP AKA'. If yes, then it will eventually respond with AT_PUB_ECDHE and MAC. If not, it will ignore AT_PUB_ECDHE. If UE wants to participate in FS extension, it will then generate its ECDH key pair, calculate a shared key based on its private key and UDM public key. The UDM will receive the RES from UE and AT_PUB_ECDHE. The shared key will be generated in UE and UDM with key pairs exchanged, and later master key is also generated.
+ In EAP-AKA', The authentication vector (AV) contains a random part RAND, an authenticator part AUTN used for authenticating the network to the USIM, an expected result part XRES, a 128-bit session key for integrity check IK, and a 128-bit session key for encryption CK.
+
+As described in the draft {{?I-D.draft-ietf-emu-aka-pfs-11}}, the server has the EAP identity of the peer. The server asks the AD to run AKA algorithm to generate RAND, AUTN, XRES, CK and IK. Further it also derives CK’ and IK’ keys which are tied to a particular network name. The server now generates the ephemeral key pair and sends the public key of that key pair and the first EAP method message to the peer. In this EAP message, AT_PUB_ECDHE (carries public key) and the AT_KDF_FS(carries other FS related parameters). Both of these might be ignored of USIM doesn’t support the Forward Secrecy extension. The peer checks if it wants to have a Forward extension in EAP AKA'. If yes, then it will eventually respond with AT_PUB_ECDHE and MAC. If not, it will ignore AT_PUB_ECDHE. If the peer wants to participate in FS extension, it will then generate its ECDH key pair, calculate a shared key based on its private key and server public key. The server will receive the RES from peer and AT_PUB_ECDHE. The shared key will be generated both in the peer and the server with key pairs exchanged, and later master key is also generated.
 
 ~~~
 MK_ECDHE = PRF'(IK'| CK'|SHARED_SECRET,"EAP-AKA' FS"|Identity)
@@ -95,41 +97,147 @@ MK_ECDHE = PRF'(IK'| CK'|SHARED_SECRET,"EAP-AKA' FS"|Identity)
 
 We suggest the following changes and enhancements:
 - A new attribute will be defined to carry the public key that is the concatenation of traditional and PQC KEM public keys.
+
 - A new attribute will be defined to carry the encapsulated key, which is the concatenation of the encapsulated key (enc) from the traditional Key Encapsulation Mechanism (KEM) algorithm and the ciphertext (ct) from the Post-Quantum Cryptography (PQC) KEM Encapsulation function.
+
 - A new AT_KDF_FS attribute to indicate the HPKE KEM and HKDF for generating the Hybrid Master Key MK_HYBRID.
-- Multiple AT_KDF_FS attributes will be included to handle the EAP peer not supporting HPKE Hybrid KEM. 
+- Multiple AT_KDF_FS attributes will be included to handle the EAP peer not supporting HPKE Hybrid KEM.
+
 - The Hybrid key derivation function will be included first to indicate higher priority than the traditional key derivation function.
 
 # Protocol Construction
 
 This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hybrid key exchange refers to using multiple key exchange algorithms simultaneously and combining the result with the goal of providing security even if all but one of the component algorithms is broken. It is motivated by transition to post-quantum cryptography.
+ 
+## Protocol Call Flow
 
-We outline the following steps in the protocol:
 
-1. USIM performs the SUPI to SUCI concealment for initial registration and sends it to ME. 5G-GUTI is used by ME if it is already registered.
-2. ME will send the registration request with SUCI or 5G-GUTI to AMF/SEAF via RAN. The RAN will forward the content to the network entity AUSF and UDM of HN.
-3. UDM/ARPF/SIDF will perform the de-concealment and also selects the authentication method. UDM generates the home network PQC KEM Public key(HN_pk) and private 
-key(HN_sk) pairs.
-4. The UDM will generate the AKA challenge and sends the EAP AKA' Authentication Vector (AV).
-5. The UDM will send the EAP AKA" AV along with SUPI, AKMA indication and Home network KEM private and public key to AUSF (HN_PQC_KEM_Public_key (HN_pk) and HN_PQC_KEM_Private_key (HN_sk)).
-   kemKeyGen() -> (HN_pk, HN_sk)
-6. The AUSF will store the expected response XRES and the Home network KEM private key HN_PQC_KEM_Private_key – HN_sk. The AUSF and AMF will forward the EAP AKA' 
-AV to UE along with HN_PQC_KEM_Public_key (HN_pk).
-7. The USIM will validate the AKA challenge received , also verifies the MAC-I. After the verification is successful and if the UE also supports the Forward secrecy , UE will invoke 
-kemEncaps using HN_pk:
-   kemEncaps (HN_pk) -> UE_ct, ss.
-UE_ct is the ciphertext representing the encapsulated key and ss is shared secret. Hybrid shared key Ks is generated by the UE using the KEM combiner (e.g., 
-{{?I-D.ounsworth-cfrg-kem-combiners}}) with parameters “ss” (Shared secret generated from the KemEncaps function) and traditional shared secret of ECDHE.
-The KEM combiner can also be a "hash and concatenation" based approach to use a “hybrid” shared secret (Ks). 
-8. The UE will send the Authentication response RES and UE_ct to AUSF via AMF. 
-9. The AUSF will verify the RES with XRES. The AUSF will use the UE_ct and home network private key HN_sk to generate shared secret.
-   Kemdecaps(UE_ct, HN_sk) -> ss.
+     USIM           Peer                        Server              AD
+      |              |                            |                |
+      |              |           EAP-Req/Identity |                |
+      |              |<---------------------------+                |
+      |              |                            |                |
+      |              | EAP-Resp/Identity          |                |
+      |              | (Privacy-Friendly)         |                |
+      |              +--------------------------->|                |
+      |      +-------+----------------------------+----------------+--+
+      |      | Server now has an identity for the peer. The server    |
+      |      | then asks the help of AD to run AKA algorithms,        |
+      |      | generating RAND, AUTN, XRES, CK, IK. Typically, the    |
+      |      | AD performs the first part of key derivations so that  |
+      |      | the authentication server gets the CK' and IK' keys    |
+      |      | already tied to a particular network name.             |
+      |      +-------+----------------------------+----------------+--+
+      |              |                            |                |
+      |              |                            | ID, key deriv. |
+      |              |                            | function,      |
+      |              |                            | network name   |
+      |              |                            +--------------->|
+      |              |                            |                |
+      |              |                            |    RAND, AUTN, |
+      |              |                            | XRES, CK', IK' |
+      |              |                            |<---------------+
+      |      +-------+----------------------------+----------------+--+
+      |      | Server now has the needed authentication vector. It    |
+      |      | generates an ephemeral ECDHE key pair, a PQC KEM key   |
+      |      | pair, sends the hybrid (PQC + ECDHE) public key of that|
+      |      | key pair and the first EAP method message to the peer  |
+      |      | In the message the AT_PUB_Hybrid attribute             |
+      |      | carries the concatenation of ECDHE and PQC KEM public  |
+      |      | keys and the AT_KDF_FS attribute carries other         |
+      |      | FS-related parameters. Both of these are               |
+      |      | skippable attributes that can be ignored if the peer   |
+      |      | does not support this extension.                       |
+      |      +-------+----------------------------+----------------+--+
+      |              |                            |                |
+      |              |     EAP-Req/AKA'-Challenge |                |
+      |              |  AT_RAND, AT_AUTN, AT_KDF, |                |
+      |              |   AT_KDF_FS, AT_KDF_INPUT, |                |
+      |              |       AT_PUB_Hybrid, AT_MAC|                |
+      |              |<---------------------------+                |
+    +--+--------------+----------------------------+---------+     |
+    | The peer checks if it wants to do the FS extension. If |     |
+    | yes, it will eventually respond with AT_PUB_Hybrid and |     |
+    | AT_MAC. If not, it will ignore AT_PUB_Hybrid and       |     |
+    | AT_KDF_FS and base all calculations on basic EAP-AKA'  |     |
+    | attributes, continuing just as in EAP-AKA' per RFC     |     |
+    | 9048 rules. In any case, the peer needs to query the   |     |
+    | auth parameters from the USIM card.                    |     |
+    +--+--------------+----------------------------+---------+     |
+      |              |                            |                |
+      |   RAND, AUTN |                            |                |
+      |<-------------+                            |                |
+      |              |                            |                |
+      | CK, IK, RES  |                            |                |
+      +------------->|                            |                |
+    +--+--------------+----------------------------+---------+     |
+    | The peer now has everything to respond. If it wants to |     |
+    | participate in the FS extension, it will then generate |     |
+    | its ECDHE key pair, calculate a hybrid shared secret   |     |
+    | key based on the server's PQC KEM public key, its ECDHE|     |
+    | key pair and the server's ECDHE public key. Finally,   |     |
+    | it proceeds to derive all EAP-AKA' key values and      |     |
+    | constructs a full response.                            |     |
+    +--+--------------+----------------------------+---------+     |
+      |              |                            |                |
+      |              | EAP-Resp/AKA'-Challenge    |                |
+      |              | AT_RES, AT_PUB_Hybrid,     |                |
+      |              | AT_MAC                     |                |
+      |              +--------------------------->|                |
+      |      +-------+----------------------------+----------------+--+
+      |      | The server now has all the necessary values. It        |
+      |      | generates the Hybrid shared secret and checks the RES  |
+      |      | and MAC values received in AT_RES and AT_MAC,          |
+      |      | respectively. Success requires both to be found        |
+      |      | correct. Note that when this document is used,         |
+      |      | the keys generated from EAP-AKA' are based on CK, IK,  |
+      |      | and the ECDHE and PQC KEM values. Even if there was an |
+      |      | attacker who held the long-term key, only an active    |
+      |      | attacker could have determined the generated session   |
+      |      | keys; additionally an attacker with a cryptographically|
+      |      | relevant quantum computer cannot get access to the     |
+      |      | server KEM private key and decrypt the data.           |
+      |      +-------+----------------------------+----------------+--+
+      |              |                            |                |
+      |              |                EAP-Success |                |
+      |              |<---------------------------+                |
+      |              |                            |                |
+      
 
-The generated ss from KEMdecaps along with traditional shared secret of ECHDE used as input to KEM combiner to generate the hybrid shared secret Ks. The UE and AUSF first generate the MK_HYBRID and subsequently generate MSK, EMSK as shown below:
+## Key Steps in protocol construction
+
+We outline the following key steps in the protocol:
+
+- Server generates the PQC KEM Public key(pk2), private key (sk2) pair and the ECDH public key (pk1), private key (sk1) pair. The server will generate the AKA challenge and sends the EAP AKA' Authentication Vector (AV). As defined in section 3.3 of {{?I-D.ietf-westerbaan-cfrg-hpke-xyber768d00}} the server PQC KEM and ECDH key pairs are derived as:
+
+~~~
+   sk1, pk1 = DeriveKeyPair(DHKEM)
+   sk2, pk2 = DeriveKeyPair(Kyber768Draft00)
+~~~
+
+- The server will store the expected response XRES, the ECDH private key sk1 and the PQC KEM private key sk2. The server will forward the EAP AKA' AV to peer along with pk1 and pk2.
+
+- The USIM will validate the AKA challenge received, also verifies the MAC-I. After the verification is successful and if the peer also supports the Forward secrecy, peer will invoke kemEncaps using concact(pk1,pk2) as defined in section 3.3 of {{?I-D.ietf-westerbaan-cfrg-hpke-xyber768d00}}:
+
+~~~
+   Encap (concat(pk1,pk2)) = (enc, ss)
+~~~
+
+"enc" is the concatenation of the encapsulated key from ECDH and ciphertext from PQC KEM whereas "ss" is hybrid shared secret key. Hybrid shared key ss is generated by the peer using the Encap ({{?I-D.ietf-westerbaan-cfrg-hpke-xyber768d00}}). The KEM combiner is a "hash and concatenation" based approach to generate a “hybrid” shared secret (ss).
+
+- The peer will send the Authentication response RES and enc to the server.
+
+- The server will verify the RES with XRES. The server will use the enc, PQC KEM private key sk2 and ECDH private key sk1 to generate shared secret:
+
+~~~
+   Decap(enc, concat(sk1,sk2)) = ss
+~~~
+
+The generated ss from Decap is the hybrid shared secret key derived from PQC KEM and traditional ECDH. The peer and the server first generate the MK_HYBRID and subsequently generate MSK, EMSK as shown below:
 
 ~~~
    MK = PRF'(IK'|CK',"EAP-AKA'"|Identity)
-   HYBRID_SHARED_SECRET, enc = Encap(pKR)  //pkR is public key of receiver. enc is encapsulated key. 
+   HYBRID_SHARED_SECRET, enc = Encap(pKR)
    MK_HYBRID = PRF'(IK'|CK'| HYBRID_SHARED_SECRET,"EAP-AKA' FS"| Identity) 
    K_encr = MK[0..127]
    K_aut = MK[128..383]
@@ -137,6 +245,8 @@ The generated ss from KEMdecaps along with traditional shared secret of ECHDE us
    MSK = MK_HYBRID [256..767] 
    EMSK = MK_HYBRID [768..1279]
 ~~~
+
+where, pkR is concatenation of traditional and PQC KEM public keys of the receiver, enc is concatenation of the encapsulated key from ECDH and the ciphertext from the PQC KEM and the Encap function is perfomed by the peer only.
 
 # IANA Considerations
 
