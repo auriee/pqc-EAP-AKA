@@ -135,7 +135,7 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
       |      +-------+----------------------------+----------------+--+
       |      | Server now has the needed authentication vector. It    |
       |      | generates an ephemeral ECDHE key pair, a PQC KEM key   |
-      |      | pair, sends the hybrid (PQC + ECDHE) public key of that| 
+      |      | pair, sends the hybrid (PQC + ECDHE) public key of that|
       |      | key pair and the first EAP method message to the peer  |
       |      | In the message the AT_PUB_Hybrid attribute             |
       |      | carries the public key and the AT_KDF_FS attribute     |
@@ -188,7 +188,7 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
       |      | and the ECDHE and PQC KEM values. Even if there was an |
       |      | attacker who held the long-term key, only an active    |
       |      | attacker could have determined the generated session   |
-      |      | keys; additionally an attacker with a cryptographically| 
+      |      | keys; additionally an attacker with a cryptographically|
       |      | relevant quantum computer cannot get access to the     |
       |      | server KEM private key and decrypt the data.           |
       |      +-------+----------------------------+----------------+--+
