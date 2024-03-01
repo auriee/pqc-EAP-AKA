@@ -85,7 +85,7 @@ PQ/T Hybrid Key Encapsulation Mechanism: A Key Encapsulation mechanism (KEM) mad
 
 # Background on EAP-AKA' with perfect forward secrecy
 
-As described in the draft {{?I-D.draft-ietf-emu-aka-pfs-11}}, the server has the EAP identity of the peer. The server asks the AD to run AKA algorithm to generate RAND, AUTN, XRES, CK and IK. Further it also derives CK’ and IK’ keys which are tied to a serving network name. The server now generates the ephemeral key pair and sends the public key of that key pair and the first EAP method message to the peer. In this EAP message, AT_PUB_ECDHE (carries public key) and the AT_KDF_FS(carries other FS related parameters). Both of these might be ignored of USIM doesn’t support the Forward Secrecy extension. The peer checks if it wants to have a Forward extension in EAP AKA'. If yes, then it will eventually respond with AT_PUB_ECDHE and MAC. If not, it will ignore AT_PUB_ECDHE. If the peer wants to participate in FS extension, it will then generate its ECDH key pair, calculate a shared key based on its private key and server public key. The server will receive the RES from peer and AT_PUB_ECDHE. The shared key will be generated both in the peer and the server with key pairs exchanged, and later master key is also generated.
+As described in the draft {{?I-D.draft-ietf-emu-aka-pfs-11}}, the server has the EAP identity of the peer. The server asks the AD to run AKA algorithm to generate RAND, AUTN, XRES, CK and IK. Further it also derives CK’ and IK’ keys which are tied to a particular network name. The server now generates the ephemeral key pair and sends the public key of that key pair and the first EAP method message to the peer. In this EAP message, AT_PUB_ECDHE (carries public key) and the AT_KDF_FS(carries other FS related parameters). Both of these might be ignored of USIM doesn’t support the Forward Secrecy extension. The peer checks if it wants to have a Forward extension in EAP AKA'. If yes, then it will eventually respond with AT_PUB_ECDHE and MAC. If not, it will ignore AT_PUB_ECDHE. If the peer wants to participate in FS extension, it will then generate its ECDH key pair, calculate a shared key based on its private key and server public key. The server will receive the RES from peer and AT_PUB_ECDHE. The shared key will be generated both in the peer and the server with key pairs exchanged, and later master key is also generated.
 
 ~~~
 MK_ECDHE = PRF'(IK'| CK'|SHARED_SECRET,"EAP-AKA' FS"|Identity)
@@ -149,30 +149,30 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
       |              |   AT_KDF_FS, AT_KDF_INPUT, |                |
       |              |       AT_PUB_Hybrid, AT_MAC|                |
       |              |<---------------------------+                |
-   +--+--------------+----------------------------+---------+      |
-   | The peer checks if it wants to do the FS extension. If |      |
-   | yes, it will eventually respond with AT_PUB_Hybrid and |      |
-   | AT_MAC. If not, it will ignore AT_PUB_Hybrid and       |      |
-   | AT_KDF_FS and base all calculations on basic EAP-AKA'  |      |
-   | attributes, continuing just as in EAP-AKA' per RFC     |      |
-   | 9048 rules. In any case, the peer needs to query the   |      |
-   | auth parameters from the USIM card.                    |      |
-   +--+--------------+----------------------------+---------+      |
+    +--+--------------+----------------------------+---------+     |
+    | The peer checks if it wants to do the FS extension. If |     |
+    | yes, it will eventually respond with AT_PUB_Hybrid and |     |
+    | AT_MAC. If not, it will ignore AT_PUB_Hybrid and       |     |
+    | AT_KDF_FS and base all calculations on basic EAP-AKA'  |     |
+    | attributes, continuing just as in EAP-AKA' per RFC     |     |
+    | 9048 rules. In any case, the peer needs to query the   |     |
+    | auth parameters from the USIM card.                    |     |
+    +--+--------------+----------------------------+---------+     |
       |              |                            |                |
       |   RAND, AUTN |                            |                |
       |<-------------+                            |                |
       |              |                            |                |
       | CK, IK, RES  |                            |                |
       +------------->|                            |                |
-   +--+--------------+----------------------------+---------+      |
-   | The peer now has everything to respond. If it wants to |      |
-   | participate in the FS extension, it will then generate |      |
-   | its Hybrid key pair, calculate a hybrid shared key     |      |
-   |  based on its ECDHE and PQC KEM key pairs and the      |      |
-   |  server's hybrid public key. Finally, it proceeds      |      |
-   | to derive all EAP-AKA' key values and constructs a     |      |
-   | full response.                                         |      |
-   +--+--------------+----------------------------+---------+      |
+    +--+--------------+----------------------------+---------+     |
+    | The peer now has everything to respond. If it wants to |     |
+    | participate in the FS extension, it will then generate |     |
+    | its Hybrid key pair, calculate a hybrid shared key     |     |
+    |  based on its ECDHE and PQC KEM key pairs and the      |     |
+    |  server's hybrid public key. Finally, it proceeds      |     |
+    | to derive all EAP-AKA' key values and constructs a     |     |
+    | full response.                                         |     |
+    +--+--------------+----------------------------+---------+     |
       |              |                            |                |
       |              | EAP-Resp/AKA'-Challenge    |                |
       |              | AT_RES, AT_PUB_Hybrid,     |                |
