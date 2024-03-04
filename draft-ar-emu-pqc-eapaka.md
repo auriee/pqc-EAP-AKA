@@ -258,18 +258,19 @@ where, pkR is concatenation of traditional and PQC KEM public keys of the receiv
       0                   1                   2                   3
       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     | AT_PUB_HYBRID  | Length        | Value                        |
+     | AT_PUB_HYBRID | Length        | Value                         |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
       
    The fields are as follows:
 
-   AT_PUB_HYBID: This is set to TBA1 BY IANA.
+   AT_PUB_HYBID:
+   
+   This is set to TBA1 BY IANA.
 
-   Length: The length of the attribute, set as other attributes in EAP-AKA
-      {{!RFC4187}}. The length is expressed in multiples of 4 bytes.  The
-      length includes the attribute type field, the Length field itself,
-      and the Value field (along with any padding).
+   Length:
+   
+   The length of the attribute, set as other attributes in EAP-AKA {{!RFC4187}}. The length is expressed in multiples of 4 bytes.  The length includes the attribute type field, the Length field itself, and the Value field (along with any padding).
 
    Value: 
 
