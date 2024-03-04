@@ -281,10 +281,7 @@ where, pkR is concatenation of traditional and PQC KEM public keys of the receiv
          and the ciphertext (ct) from the PQC KEM Encapsulation function from the 
          EAP peer.
 
-      Because the length of the attribute must be a multiple of 4 bytes,
-      the sender pads the Value field with zero bytes when necessary.
-      To retain the security of the keys, the sender SHALL generate a
-      fresh value for each run of the protocol.
+   Because the length of the attribute must be a multiple of 4 bytes,the sender pads the Value field with zero bytes when necessary. To retain the security of the keys, the sender SHALL generate a fresh value for each run of the protocol.
 
 # IANA Considerations
 
