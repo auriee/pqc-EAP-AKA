@@ -65,7 +65,7 @@ Nevertheless, EAP-AKA' FS uses traditional algorithms public-key algorithms (e.g
 
 The migration to PQC is unique in the history of modern digital cryptography in that neither the traditional algorithms nor the post-quantum algorithms are fully trusted to protect data for the required data lifetimes. The post-quantum algorithms face uncertainty about the underlying mathematics, compliance issues, unknown vulnerabilities, hardware and software implementations that have not had sufficient maturing time to rule out classical cryptanalytic attacks and implementation bugs. During the transition from traditional to post-quantum algorithms, there is a desire or a requirement for protocols that use both algorithm types.
 
-This specification defines Hybrid public-key encryption (HPKE) {{RFC9180}} for use with EAP-AKA' FS. HPKE offers a variant of public-key encryption of arbitrary-sized plaintexts for a recipient public key. HPKE works for any combination of an asymmetric key encapsulation mechanism (KEM), key derivation function (KDF), and authenticated encryption with additional data (AEAD) function. HPKE can be extended to support hybrid post-quantum Key Encapsulation Mechanisms (KEMs) as defined in {{?I-D.ietf-westerbaan-cfrg-hpke-xyber768d00}}.
+This specification defines Hybrid public-key encryption (HPKE) {{RFC9180}} for use with EAP-AKA' FS. HPKE offers a variant of public-key encryption of arbitrary-sized plaintexts for a recipient public key. HPKE works for any combination of an asymmetric key encapsulation mechanism (KEM), key derivation function (KDF), and authenticated encryption with additional data (AEAD) function. HPKE can be extended to support hybrid post-quantum Key Encapsulation Mechanisms (KEMs) as defined in {{?I-D.connolly-cfrg-xwing-kem}}.
 
 # Conventions and Definitions
 
@@ -220,7 +220,7 @@ We outline the following key steps in the protocol:
 
 - The server will store the expected response XRES, the ECDH private key sk_X and the PQC KEM private key sk_M. The server will forward the EAP AKA' AV to peer along with pk_X and pk_M.
 
-- The USIM will validate the AKA challenge received, also verifies the MAC-I. After the verification is successful and if the peer also supports the Forward secrecy, peer will invoke kemEncaps using concat(pk_X,pk_M) as defined in section 5.4 of {{?I-D.connolly-cfrg-xwing-kem}}:
+- The USIM will validate the AKA challenge received, also verifies the MAC. After the verification is successful and if the peer also supports the Forward secrecy, peer will invoke Encapsulate using concat(pk_X,pk_M) as defined in section 5.4 of {{?I-D.connolly-cfrg-xwing-kem}}:
 
 ~~~
    def Encapsulate(pk):
