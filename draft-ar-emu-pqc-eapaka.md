@@ -208,7 +208,7 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
 
 We outline the following key steps in the protocol:
 
-- Server generates the PQC KEM Public key(pk_M), private key (sk_M) pair and the ECDH public key (pk_X), private key (sk_X) pair. The server will generate the AKA challenge and sends the EAP AKA' Authentication Vector (AV). As defined in section 5.2 of {{?I-D.connolly-cfrg-xwing-kem}} the server PQC KEM and ECDH key pairs are derived as:
+- Server generates the PQC KEM Public key(pk_M), private key (sk_M) pair and the ECDH public key (pk_X), private key (sk_X) pair. The server will generate and send the EAP AKA' Authentication Vector (AV). As defined in section 5.2 of {{?I-D.connolly-cfrg-xwing-kem}} the server PQC KEM and ECDH key pairs are derived as:
 
 ~~~
    def GenerateKeyPair():
@@ -220,7 +220,7 @@ We outline the following key steps in the protocol:
 
 - The server will store the expected response XRES, the ECDH private key sk_X and the PQC KEM private key sk_M. The server will forward the EAP AKA' AV to peer along with pk_X and pk_M.
 
-- The USIM will validate the AKA challenge received, also verifies the MAC. After the verification is successful and if the peer also supports the Forward secrecy, peer will invoke Encapsulate using concat(pk_X,pk_M) as defined in section 5.4 of {{?I-D.connolly-cfrg-xwing-kem}}:
+- The USIM will validate the AUTH received, also verifies the MAC. After the verification is successful and if the peer also supports the Forward secrecy, peer will invoke Encapsulate using concat(pk_X,pk_M) as defined in section 5.4 of {{?I-D.connolly-cfrg-xwing-kem}}:
 
 ~~~
    def Encapsulate(pk):
