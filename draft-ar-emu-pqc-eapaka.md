@@ -1,6 +1,6 @@
 ---
-title: "Post-Quantum Cryptography enhancement in EAP-AKA prime"
-abbrev: "PQC in EAP-AKA prime"
+title: "Enhancing Forward Secrecy in EAP-AKA' with Hybrid Post-Quantum Cryptography"
+abbrev: "PQC Hybrid in EAP-AKA prime"
 category: std
 
 docname: draft-ar-emu-pqc-eapaka-01
