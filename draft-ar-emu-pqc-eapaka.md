@@ -3,7 +3,7 @@ title: "Post-Quantum Cryptography enhancement in EAP-AKA prime"
 abbrev: "PQC in EAP-AKA prime"
 category: std
 
-docname: draft-ar-emu-pqc-eapaka-00
+docname: draft-ar-emu-pqc-eapaka-01
 submissiontype: IETF
 number:
 date:
