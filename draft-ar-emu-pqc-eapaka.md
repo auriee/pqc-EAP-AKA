@@ -3,7 +3,7 @@ title: "Enhancing Security in EAP-AKA' with Hybrid Post-Quantum Cryptography"
 abbrev: "PQC Hybrid in EAP-AKA prime"
 category: std
 
-docname: draft-ar-emu-pqc-eapaka-01
+docname: draft-ar-emu-pqc-eapaka-02
 submissiontype: IETF
 number:
 date:
