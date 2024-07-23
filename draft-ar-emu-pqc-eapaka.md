@@ -1,5 +1,5 @@
 ---
-title: "Enhancing Forward Secrecy in EAP-AKA' with Hybrid Post-Quantum Cryptography"
+title: "Enhancing Security in EAP-AKA' with Hybrid Post-Quantum Cryptography"
 abbrev: "PQC Hybrid in EAP-AKA prime"
 category: std
 
