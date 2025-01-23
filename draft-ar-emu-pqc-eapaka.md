@@ -3,7 +3,7 @@ title: "Enhancing Security in EAP-AKA' with Hybrid Post-Quantum Cryptography"
 abbrev: "PQC Hybrid in EAP-AKA prime"
 category: std
 
-docname: draft-ar-emu-pqc-eapaka-02
+docname: draft-ar-emu-pqc-eapaka-03
 submissiontype: IETF
 number:
 date:
@@ -53,7 +53,7 @@ informative:
 
 Forward Secrecy for the Extensible Authentication Protocol Method for Authentication and Key Agreement (EAP-AKA' FS) is specified in {{!I-D.ietf-emu-aka-pfs}}, providing updates to {{RFC9048}} with an optional extension that offers ephemeral key exchange using the traditional Ephemeral Elliptic Curve Diffie-Hellman (ECDHE) key agreement algorithm for achieving perfect forward secrecy (PFS). However, it is susceptible to future threats from Cryptographically Relevant Quantum Computers, which could potentially compromise a traditional ephemeral public key. If the adversary has also obtained knowledge of the long-term key and ephemeral public key, it could compromise session keys generated as part of the authentication run in EAP-AKA'.
 
-This draft aims to enhance the security of EAP-AKA' FS making it quantum-safe.
+This draft aims to enhance the security of EAP-AKA' FS protocol by leveraging PQ/T Hybrid {{?I-D.ietf-pquip-pqt-hybrid-terminology}} algorithms to make it quantum-safe.
 
 --- middle
 
