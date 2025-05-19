@@ -69,7 +69,7 @@ Nevertheless, EAP-AKA' FS uses traditional algorithms public-key algorithms (e.g
 
 The migration to PQC is unique in the history of modern digital cryptography in that neither the traditional algorithms nor the post-quantum algorithms are fully trusted to protect data for the required data lifetimes. The post-quantum algorithms face uncertainty about the underlying mathematics, compliance issues, unknown vulnerabilities, hardware and software implementations that have not had sufficient maturing time to rule out classical cryptanalytic attacks and implementation bugs. During the transition from traditional to post-quantum algorithms, there is a desire or a requirement for protocols that use both algorithm types.
 
-This specification defines Hybrid public-key encryption (HPKE) {{RFC9180}} for use with EAP-AKA' FS. HPKE offers a variant of public-key encryption of arbitrary-sized plaintexts for a recipient public key. HPKE works for any combination of an asymmetric key encapsulation mechanism (KEM), key derivation function (KDF), and authenticated encryption with additional data (AEAD) function. HPKE can be extended to support hybrid post-quantum Key Encapsulation Mechanisms (KEMs) as defined in {{?I-D.connolly-cfrg-xwing-kem}}. Although the proposed mechanism is applicable to any post-quantum Key Encapsulation Mechanism (PQ-KEM), this document specifies its use with Module-Lattice-based Key Encapsulation Mechanisms (ML-KEMs). ML-KEM provides a one-pass (store-and-forward) cryptographic method for an originator to securely transmit keying material to a recipient using the recipient’s ML-KEM public key. Three parameter sets for ML-KEM are defined in {{FIPS203}}, namely ML-KEM-512, ML-KEM-768, and ML-KEM-1024, listed in order of increasing security strength and decreasing performance.
+This specification defines PQ/T Hybrid KEMs for use with EAP-AKA' FS {{?I-D.irtf-cfrg-hybrid-kems}}. Although the proposed mechanism is applicable to any post-quantum Key Encapsulation Mechanism (PQ-KEM), this document specifies its use with Module-Lattice-based Key Encapsulation Mechanisms (ML-KEMs). ML-KEM provides a one-pass (store-and-forward) cryptographic method for an originator to securely transmit keying material to a recipient using the recipient’s ML-KEM public key. Three parameter sets for ML-KEM are defined in {{FIPS203}}, namely ML-KEM-512, ML-KEM-768, and ML-KEM-1024, listed in order of increasing security strength and decreasing performance.
 
 # Conventions and Definitions
 
@@ -103,9 +103,9 @@ We suggest the following changes and enhancements:
 
 - A new attribute, AT_PUB_HYBRID, is defined to carry the public key, which is the concatenation of traditional and PQC KEM public keys from the EAP server. The AT_PUB_HYBRID attribute will carry the encapsulated key, which is formed by concatenating the encapsulated key (enc) from the traditional KEM algorithm and the ciphertext (ct) from the PQC KEM Encapsulation function from the EAP peer.
 
-- The AT_KDF_FS attribute is updated to indicate the HPKE KEM and HKDF for generating the Hybrid Master Key MK_HYBRID.
+- The AT_KDF_FS attribute is updated to indicate the PQ/T KEM and HKDF for generating the Hybrid Master Key MK_HYBRID.
 
-- Multiple AT_KDF_FS attributes is included in the EAP-Request to handle the EAP peer not supporting HPKE Hybrid KEM.
+- Multiple AT_KDF_FS attributes is included in the EAP-Request to handle the EAP peer not supporting PQ/T Hybrid KEM.
 
 - The Hybrid key derivation function will be included first in the EAP-Request to indicate a higher priority than the traditional key derivation function.
 
@@ -212,49 +212,55 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
 
 We outline the following key steps in the protocol:
 
-- Server generates the PQC KEM Public key(pk_M), private key (sk_M) pair and the ECDH public key (pk_X), private key (sk_X) pair. The server will generate and send the EAP AKA' Authentication Vector (AV). As defined in section 5.2 of {{?I-D.connolly-cfrg-xwing-kem}} the server PQC KEM and ECDH key pairs are derived as:
+- Server generates the PQC KEM Public key(pq_PK), private key (pq_SK) pair and the ECDH public key (trad_PK), private key (trad_SK) pair. The server will generate and send the EAP AKA' Authentication Vector (AV). As defined in section 5.2 of {{?I-D.irtf-cfrg-hybrid-kems}} the server PQC KEM and ECDH key pairs are derived as:
 
 ~~~
-   def GenerateKeyPair():
-     (pk_M, sk_M) = ML-KEM-768.KeyGen()
-     sk_X = random(32)
-     pk_X = X25519(sk_X, X25519_BASE)
-     return concat(sk_M, sk_X, pk_X), concat(pk_M, pk_X)
+
+   def expandDecapsulationKey(sk):
+      expanded = SHAKE256(sk, 112)
+      (pq_PK, pq_SK) = ML-KEM-768.KeyGen_internal(expanded[0:32], expanded[32:64])
+      trad_SK = P-256.ScalarFromBytes(expanded[64:112])
+      trad_PK = P-256.SerializeElement(P-256.ScalarMultBase(trad_SK))
+      return (pq_SK, trad_SK, pq_PK, trad_PK)
+   
+   def KeyGen():
+      sk = random(32)
+      (pq_SK, trad_SK, pq_PK, trad_PK) = expandDecapsulationKey(sk)
+      return sk, concat(pq_PK, trad_PK)
+
 ~~~
 
-- The server will store the expected response XRES, the ECDH private key sk_X and the PQC KEM private key sk_M. The server will forward the EAP AKA' AV to peer along with pk_X and pk_M.
+- The server will store the expected response XRES, the ECDH private key trad_SK and the PQC KEM private key pq_SK. The server will forward the EAP AKA' AV to peer along with pq_PK and trad_PK.
 
-- The USIM will validate the AUTH received, also verifies the MAC. After the verification is successful and if the peer also supports the Forward secrecy, peer will invoke Encapsulate using concat(pk_M,pk_X) as defined in section 5.4 of {{?I-D.connolly-cfrg-xwing-kem}}:
+- The USIM will validate the AUTH received, also verifies the MAC. After the verification is successful and if the peer also supports the Forward secrecy, peer will invoke Encapsulate using concat(pq_PK, trad_PK) as defined in section 5.4 of {{?I-D.irtf-cfrg-hybrid-kems}}:
 
 ~~~
-   def Encapsulate(pk):
-     pk_M = pk[0:1184]
-     pk_X = pk[1184:1216]
-     ek_X = random(32)
-     ct_X = X25519(ek_X, X25519_BASE)
-     ss_X = X25519(ek_X, pk_X)
-     (ss_M, ct_M) = ML-KEM-768.Encaps(pk_M)
-     ss = Combiner(ss_M, ss_X, ct_X, pk_X)
-     ct = concat(ct_M, ct_X)
-     return (ss, ct)
+   def Encaps(pk):
+      pq_PK = pk[0:1184]
+      trad_PK = P-256.DeserializeElement(pk[1184:1217])
+      (pq_SS, pq_CT) = ML-KEM-768.Encaps(pq_PK)
+      ek = P-256.RandomScalar()
+      trad_CT = P-256.SerializeElement(P-256.ScalarBaseMult(ek))
+      trad_SS = P-256.SerializeElementAsSharedSecret(P-256.ScalarMult(trad_PK, ek))
+      ss = SHA3-256(pq_SS, trad_SS, trad_CT, pk[1184:1217], label)
+      ct = concat(pq_CT, trad_CT)
+      return (ss, ct)
 ~~~
 
-"ct" is the concatenation of the ciphertext from PQC KEM and encapsulated key from ECDH whereas "ss" is hybrid shared secret key. Hybrid shared key ss is generated by the peer using the Encapsulate() ({{?I-D.connolly-cfrg-xwing-kem}}). The Combiner() is a "hash and concatenation" based approach using SHA3-256 (See section 5.3 of {{?I-D.connolly-cfrg-xwing-kem}}) to generate a “hybrid” shared secret (ss).
+"ct" is the concatenation of the ciphertext from PQC KEM and encapsulated key from ECDH whereas "ss" is hybrid shared secret key. Hybrid shared key ss is generated by the peer using the Encapsulate() ({{?I-D.irtf-cfrg-hybrid-kems}}).
 
 - The peer will send the Authentication response RES and ct to the server.
 
-- The server will verify the RES with XRES. The server will use the ct, PQC KEM private key sk_M and ECDH private key sk_X to generate shared secret:
+- The server will verify the RES with XRES. The server will use the ct, PQC KEM private key pq_SK and ECDH private key trad_SK to generate shared secret:
 
 ~~~
-   def Decapsulate(ct, sk):
-     ct_M = ct[0:1088]
-     ct_X = ct[1088:1120]
-     sk_M = sk[0:2400]
-     sk_X = sk[2400:2432]
-     pk_X = sk[2432:2464]
-     ss_M = ML-KEM-768.Decapsulate(ct_M, sk_M)
-     ss_X = X25519(sk_X, ct_X)
-     return Combiner(ss_M, ss_X, ct_X, pk_X)
+   def Decaps(sk, ct):
+      (pq_SK, trad_SK, pq_PK, trad_PK) = expandDecapsulationKey(sk)
+      pq_CT = ct[0:1088]
+      trad_CT = P-256.DeserializeElement(ct[1088:1121])
+      pq_SS = ML-KEM-768.Decapsulate(pq_SK, pq_CT)
+      trad_SS = P-256.SerializeElementAsSharedSecret(P-256.ScalarMult(trad_SK, trad_CT))
+      return SHA3-256(pq_SS, trad_SS, ct[1088:1121], trad_PK, label)
 ~~~
 
 The generated ss from Decapsulate is the hybrid shared secret key derived from PQC KEM and traditional ECDH. The peer and the server first generate the MK_HYBRID and subsequently generate MSK, EMSK as shown below:
@@ -282,7 +288,11 @@ where, pkR is concatenation of PQC KEM and traditional public keys of the receiv
       0                   1                   2                   3
       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     | AT_PUB_HYBRID | Length        | Value                         |
+     | AT_PUB_HYBRID    |   Reserved    |      Length (in bytes)     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                                                               |
+     |                       Value (variable)                        |
+     |                                                               |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
       
@@ -292,9 +302,15 @@ where, pkR is concatenation of PQC KEM and traditional public keys of the receiv
    
    This is set to TBA1 BY IANA.
 
+   Reserved:
+   
+   A 1-byte field reserved for future use. Including this field ensures that the fixed header (Type, Reserved, Length) is 4 bytes long, maintaining 4-byte alignment for the following Value field. The Reserved field MUST be set to 0 on transmission and ignored on receipt.
+   
    Length:
    
-   The length of the attribute, set as other attributes in EAP-AKA {{!RFC4187}}. The length is expressed in multiples of 4 bytes.  The length includes the attribute type field, the Length field itself, and the Value field (along with any padding).
+   A 2-byte unsigned integer indicating the total length of the attribute in bytes, including the Type, Reserved, Length, and Value fields, as well as any padding. The length is expressed in multiples of 4 bytes.
+
+   This differs from the attribute format used in EAP-AKA {{!RFC4187}}, where the Length field is 1 byte.The modification is necessary because PQC KEM public keys, such as those defined in ML-KEM-1024, will be 1568 bytes, which would exceed the 1024-byte limit imposed by the original EAP-AKA format.
 
    Value: 
 
@@ -305,7 +321,7 @@ where, pkR is concatenation of PQC KEM and traditional public keys of the receiv
          and the encapsulated key (enc) from the traditional KEM algorithm and from the 
          EAP peer.
 
-   Because the length of the attribute must be a multiple of 4 bytes,the sender pads the Value field with zero bytes when necessary. To retain the security of the keys, the sender SHALL generate a fresh value for each run of the protocol.
+   Because the length of the attribute must be a multiple of 4 bytes, the sender pads the Value field with zero bytes when necessary. To retain the security of the keys, the sender SHALL generate a fresh value for each run of the protocol.
 
 # Security Considerations
 
