@@ -103,9 +103,9 @@ We suggest the following changes and enhancements:
 
 - A new attribute, AT_PUB_HYBRID, is defined to carry the public key, which is the concatenation of traditional and PQC KEM public keys from the EAP server. The AT_PUB_HYBRID attribute will carry the encapsulated key, which is formed by concatenating the encapsulated key (enc) from the traditional KEM algorithm and the ciphertext (ct) from the PQC KEM Encapsulation function from the EAP peer.
 
-- The AT_KDF_FS attribute is updated to indicate the PQ/T KEM and HKDF for generating the Hybrid Master Key MK_HYBRID.
+- The AT_KDF_FS attribute is updated to indicate the PQ/T Hybrid KEM in HPKE and HKDF for generating the Hybrid Master Key MK_HYBRID.
 
-- Multiple AT_KDF_FS attributes is included in the EAP-Request to handle the EAP peer not supporting PQ/T Hybrid KEM.
+- Multiple AT_KDF_FS attributes is included in the EAP-Request to handle the EAP peer not supporting PQ/T Hybrid KEM in HPKE.
 
 - The Hybrid key derivation function will be included first in the EAP-Request to indicate a higher priority than the traditional key derivation function.
 
@@ -212,7 +212,7 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
 
 We outline the following key steps in the protocol:
 
-- Server generates the PQC KEM Public key(pq_PK), private key (pq_SK) pair and the ECDH public key (trad_PK), private key (trad_SK) pair. The server will generate and send the EAP AKA' Authentication Vector (AV). As defined in section 5.2 of {{?I-D.irtf-cfrg-hybrid-kems}} the server PQC KEM and ECDH key pairs are derived.
+- Server generates the PQC KEM Public key(pq_PK), private key (pq_SK) pair and the ECDH public key (trad_PK), private key (trad_SK) pair. The server will generate and send the EAP AKA' Authentication Vector (AV).
 
 - The server will store the expected response XRES, the ECDH private key trad_SK and the PQC KEM private key pq_SK. The server will forward the EAP AKA' AV to peer along with pq_PK and trad_PK.
 
@@ -222,7 +222,7 @@ We outline the following key steps in the protocol:
 
 - The peer will send the Authentication response RES and ct to the server.
 
-- The server will verify the RES with XRES. The server will use the ct, PQC KEM private key pq_SK and ECDH private key trad_SK to generate shared secret:
+- The server will verify the RES with XRES. The server will use the ct, PQC KEM private key pq_SK and ECDH private key trad_SK to generate shared secret.
 
 The generated ss from Decapsulate is the hybrid shared secret key derived from PQC KEM and traditional ECDH. The peer and the server first generate the MK_HYBRID and subsequently generate MSK, EMSK as shown below:
 
