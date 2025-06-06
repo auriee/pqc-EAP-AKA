@@ -69,7 +69,7 @@ Nevertheless, EAP-AKA' FS uses traditional algorithms public-key algorithms (e.g
 
 The migration to PQC is unique in the history of modern digital cryptography in that neither the traditional algorithms nor the post-quantum algorithms are fully trusted to protect data for the required data lifetimes. The post-quantum algorithms face uncertainty about the underlying mathematics, compliance issues, unknown vulnerabilities, hardware and software implementations that have not had sufficient maturing time to rule out classical cryptanalytic attacks and implementation bugs. During the transition from traditional to post-quantum algorithms, there is a desire or a requirement for protocols that use both algorithm types.
 
-This specification defines HPKE {{?I-D.barnes-hpke-pq}} {{?I-D.irtf-cfrg-hybrid-kems}} for use with EAP-AKA' FS.  HPKE offers a variant of public-key encryption of arbitrary-sized plaintexts for a recipient public key. HPKE works for any combination of an asymmetric key encapsulation mechanism (KEM), key derivation function (KDF), and authenticated encryption with additional data (AEAD) function. HPKE can be extended to support hybrid post-quantum Key Encapsulation Mechanisms (KEMs) as defined in {{?I-D.barnes-hpke-pq}}.
+This specification defines HPKE {{?I-D.ietf-hpke-pq}} {{?I-D.irtf-cfrg-hybrid-kems}} for use with EAP-AKA' FS.  HPKE offers a variant of public-key encryption of arbitrary-sized plaintexts for a recipient public key. HPKE works for any combination of an asymmetric key encapsulation mechanism (KEM), key derivation function (KDF), and authenticated encryption with additional data (AEAD) function. HPKE can be extended to support hybrid post-quantum Key Encapsulation Mechanisms (KEMs) as defined in {{?I-D.ietf-hpke-pq}}.
 
 # Conventions and Definitions
 
@@ -296,7 +296,7 @@ For security properties of traditional ECDHE for EAP-AKA FS, see section 7 of {{
 
 # IANA Considerations
 
-   One new value (TBA1) in the skippable range need to be assigned by IANA 
+   Two new values (TBA2) and (TBA3) in the skippable range need to be assigned by IANA 
    for AT_PUB_HYBRID ({{hybrid}}) in the "Attribute Types" registry 
    under the "EAP-AKA and EAP-SIM Parameters" group.
 
@@ -305,11 +305,13 @@ For security properties of traditional ECDHE for EAP-AKA FS, see section 7 of {{
    function entry:
 
 ~~~
-   +=========+===============================+=========================+
-   | Value   | Description                   | Reference               |
-   +=========+===============================+=========================+
-   | TBA2    | X25519Kyber768Draft00         | [TBD BY IANA: THIS RFC] |
-   +=========+===============================+=========================+
+   +=========+========================================================+=====================================+
+   | Value   | Description                                                        | Reference               |
+   +=========+========================================================+=====================================+
+   | TBA2    | QSF-KEM(ML-KEM-768,P-256)-XOF(SHAKE256)-KDF(SHA3-256)              | [TBD BY IANA: THIS RFC] |
+   +=========+===============================+========================+=====================================+
+   | TBA3    | KitchenSink-KEM(ML-KEM-768,X25519)-XOF(SHAKE256)-KDF(HKDF-SHA-256) | [TBD BY IANA: THIS RFC] |
+   +=========+===============================+========================+=====================================+
 ~~~
 
 --- back
