@@ -45,6 +45,7 @@ normative:
   RFC9180:
   RFC9048:
   RFC9678:
+  RFC3748:
 
 informative:
   
@@ -109,6 +110,8 @@ We suggest the following changes and enhancements:
 
 - The Hybrid key derivation function will be included first in the EAP-Request to indicate a higher priority than the traditional key derivation function.
 
+- According to {{RFC3748}}, lower layers must provide an EAP MTU of 1020 bytes or greater, so any extensions to EAP-AKA SHOULD NOT exceed the EAP MTU of 1020 bytes. Hence, as in {{RFC9678}}, we split the EAP-Request/AKA'-Challenge and EAP-Response/AKA'-Challenge pairs into two rounds namely EAP-Request/AKA'-Challenge (1),(2) and EAP-Response/AKA'-Challenge (1), (2) respectively. The longer values are split to two, of varied length and values and sent with separate AKA'-Challenge messages.
+
 # Protocol Construction
 
 This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hybrid key exchange refers to using multiple key exchange algorithms simultaneously and combining the result with the goal of providing security even if all but one of the component algorithms is broken. It is motivated by transition to post-quantum cryptography.
@@ -154,7 +157,8 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
       |      | does not support this extension.                       |
       |      +-------+----------------------------+----------------+--+
       |              |                            |                |
-      |              |     EAP-Req/AKA'-Challenge |                |
+      |              | EAP-Req/AKA'-Challenge (1),|                |
+      |              |  EAP-Req/AKA'-Challenge (2)|                |
       |              |  AT_RAND, AT_AUTN, AT_KDF, |                |
       |              |   AT_KDF_FS, AT_KDF_INPUT, |                |
       |              |       AT_PUB_HYBRID, AT_MAC|                |
@@ -184,7 +188,8 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
     | constructs a full response.                            |     |
     +--+--------------+----------------------------+---------+     |
       |              |                            |                |
-      |              | EAP-Resp/AKA'-Challenge    |                |
+      |              |EAP-Resp/AKA'-Challenge (1),|                |
+      |              | EAP-Resp/AKA'-Challenge (2)|                |
       |              | AT_RES, AT_PUB_HYBRID,     |                |
       |              | AT_MAC                     |                |
       |              +--------------------------->|                |
