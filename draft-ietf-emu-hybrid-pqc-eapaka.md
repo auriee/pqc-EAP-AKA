@@ -3,7 +3,7 @@ title: "Enhancing Security in EAP-AKA' with Hybrid Post-Quantum Cryptography"
 abbrev: "PQC Hybrid in EAP-AKA prime"
 category: std
 
-docname: draft-ietf-emu-hybrid-pqc-eapaka-00
+docname: draft-ietf-emu-hybrid-pqc-eapaka-01
 submissiontype: IETF
 number:
 date:
@@ -109,6 +109,10 @@ We suggest the following changes and enhancements:
 
 - The Hybrid key derivation function will be included first in the EAP-Request to indicate a higher priority than the traditional key derivation function.
 
+# Message Fragmentation and Reassembly
+
+The message fragmentation and reassembly will be similar to as outlined in {{?I-D.ietf-emu-pqc-eapaka}}. For brevity, the authors would like to defer the reader to {{?I-D.ietf-emu-pqc-eapaka}} for details.
+
 # Protocol Construction
 
 This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hybrid key exchange refers to using multiple key exchange algorithms simultaneously and combining the result with the goal of providing security even if all but one of the component algorithms is broken. It is motivated by transition to post-quantum cryptography.
@@ -154,7 +158,8 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
       |      | does not support this extension.                       |
       |      +-------+----------------------------+----------------+--+
       |              |                            |                |
-      |              |     EAP-Req/AKA'-Challenge |                |
+      |              | EAP-Req/AKA'-Challenge (1),|                |
+      |              |  EAP-Req/AKA'-Challenge (2)|                |
       |              |  AT_RAND, AT_AUTN, AT_KDF, |                |
       |              |   AT_KDF_FS, AT_KDF_INPUT, |                |
       |              |       AT_PUB_HYBRID, AT_MAC|                |
@@ -185,6 +190,7 @@ This section defines the construction for hybrid key exchange in EAP-AKA' FS. Hy
     +--+--------------+----------------------------+---------+     |
       |              |                            |                |
       |              | EAP-Resp/AKA'-Challenge    |                |
+      |              |  EAP-Req/AKA'-Challenge (2)|                |
       |              | AT_RES, AT_PUB_HYBRID,     |                |
       |              | AT_MAC                     |                |
       |              +--------------------------->|                |
