@@ -45,6 +45,8 @@ normative:
   RFC9180:
   RFC9048:
   RFC9678:
+  RFC9958:
+  RFC9794:
 
 informative:
   
@@ -63,9 +65,9 @@ This draft aims to enhance the security of EAP-AKA' FS protocol by leveraging PQ
 
 # Introduction
 
-Forward Secrecy for the Extensible Authentication Protocol Method for Authentication and Key Agreement (EAP-AKA' FS) defined in {{RFC9678}} updates the improved Extensible Authentication Protocol Method for 3GPP Mobile Network Authentication and Key Agreement (EAP-AKA') specified in {{RFC9048}}, with an optional extension providing ephemeral key exchange. This prevents an attacker who has gained access to the long term key from obtaining session keys established in the past, assuming these have been properly deleted. EAP-AKA' FS mitigates passive attacks (e.g., large scale pervasive monitoring) against future sessions.
+Forward Secrecy for the Extensible Authentication Protocol Method for Authentication and Key Agreement (EAP-AKA' FS) defined in {{RFC9678}} updates the improved Extensible Authentication Protocol Method for 3GPP Mobile Network Authentication and Key Agreement (EAP-AKA') specified in {{RFC9048}}, with an optional extension providing ephemeral key exchange. The ephemeral key exchange prevents an attacker who subsequently obtains the long-term key from recovering session keys established in previous EAP-AKA' FS authentication runs, provided that the corresponding ephemeral secrets and derived session keys have been deleted. EAP-AKA' FS mitigates passive attacks (e.g., large scale pervasive monitoring) against future sessions.
 
-Nevertheless, EAP-AKA' FS uses traditional algorithms public-key algorithms (e.g., ECDH) which will be broken by a Cryptographically Relevant Quantum Computer (CRQC) using Shor's algorithm. The presence of a CRQC would render state-of-the-art, traditional public-key algorithms deployed today obsolete and insecure, since the assumptions about the intractability of the mathematical problems for these algorithms that offer confident levels of security today no longer apply in the presence of a CRQC. A CRQC could recover the SHARED_SECRET from the ECDHE public keys (Section 6.3 of {{RFC9678}}). If the adversary has also obtained knowledge of the long-term key, it could then compute CK', IK', and the SHARED_SECRET, and any derived output keys. This means that the CRQC would disable the forward security capability provided by {{RFC9678}}.
+Nevertheless, EAP-AKA' FS uses traditional algorithms public-key algorithms (e.g., ECDH) which will be broken by a Cryptographically Relevant Quantum Computer (CRQC) using Shor's algorithm. A CRQC would render commonly deployed traditional public-key algorithms based on factoring or discrete-logarithm problems insecure. The computational assumptions underlying these algorithms would no longer provide the intended security against an adversary with a sufficiently capable quantum computer. In particular, a CRQC could recover the ECDHE SHARED_SECRET from the exchanged public keys described in Section 6.3 of {{RFC 9678}}. If the adversary has also obtained knowledge of the long-term key, it could then compute CK', IK', and the SHARED_SECRET, and any derived output keys. This means that the CRQC would disable the forward security capability provided by {{RFC9678}}.
 
 The migration to PQC is unique in the history of modern digital cryptography in that neither the traditional algorithms nor the post-quantum algorithms are fully trusted to protect data for the required data lifetimes. The post-quantum algorithms face uncertainty about the underlying mathematics, compliance issues, unknown vulnerabilities, hardware and software implementations that have not had sufficient maturing time to rule out classical cryptanalytic attacks and implementation bugs. During the transition from traditional to post-quantum algorithms, there is a desire or a requirement for protocols that use both algorithm types.
 
@@ -77,7 +79,7 @@ This specification defines HPKE {{?I-D.ietf-hpke-pq}} {{?I-D.irtf-cfrg-hybrid-ke
 
 # Terminology
 
-This document makes use of the terms defined in {{?I-D.ietf-pquip-pqt-hybrid-terminology}}. For the purposes of this document, it is helpful to be able to divide cryptographic algorithms into two classes:
+This document makes use of the terms defined in {{RFC9794}}. For the purposes of this document, it is helpful to be able to divide cryptographic algorithms into two classes:
 
 "Traditional Algorithm": An asymmetric cryptographic algorithm based on integer factorisation, finite field discrete logarithms or elliptic curve discrete logarithms. In the context of JOSE, examples of traditional key exchange algorithms include Elliptic Curve Diffie-Hellman Ephemeral Static {{?RFC6090}} {{?RFC8037}}. In the context of COSE, examples of traditional key exchange algorithms include Ephemeral-Static (ES) DH and Static-Static (SS) DH {{?RFC9052}}.
 
@@ -89,9 +91,9 @@ PQ/T Hybrid Key Encapsulation Mechanism: A Key Encapsulation mechanism (KEM) mad
 
 # Background on EAP-AKA' with perfect forward secrecy
 
- In EAP-AKA', The authentication vector (AV) contains a random part RAND, an authenticator part AUTN used for authenticating the network to the USIM, an expected result part XRES, a 128-bit session key for integrity check IK, and a 128-bit session key for encryption CK.
+ In EAP-AKA', the authentication vector (AV) contains a random part RAND, an authenticator part AUTN used for authenticating the network to the USIM, an expected result part XRES, a 128-bit session key for integrity check IK, and a 128-bit session key for encryption CK.
 
-As described in the draft {{RFC9678}}, the server has the EAP identity of the peer. The server asks the AD to run AKA algorithm to generate RAND, AUTN, XRES, CK and IK. Further it also derives CK’ and IK’ keys which are tied to a particular network name. The server now generates the ephemeral key pair and sends the public key of that key pair and the first EAP method message to the peer. In this EAP message, AT_PUB_ECDHE (carries public key) and the AT_KDF_FS(carries other FS related parameters). Both of these might be ignored of USIM doesn’t support the Forward Secrecy extension. The peer checks if it wants to have a Forward extension in EAP AKA'. If yes, then it will eventually respond with AT_PUB_ECDHE and MAC. If not, it will ignore AT_PUB_ECDHE. If the peer wants to participate in FS extension, it will then generate its ECDH key pair, calculate a shared key based on its private key and server public key. The server will receive the RES from peer and AT_PUB_ECDHE. The shared key will be generated both in the peer and the server with key pairs exchanged, and later master key is also generated.
+As described in {{RFC9678}}, the server has the EAP identity of the peer. The server asks the AD to run AKA algorithm to generate RAND, AUTN, XRES, CK and IK. Further it also derives CK’ and IK’ keys which are tied to a particular network name. The server now generates the ephemeral key pair and sends the public key of that key pair and the first EAP method message to the peer. In this EAP message, AT_PUB_ECDHE (carries public key) and the AT_KDF_FS(carries other FS related parameters). Both of these might be ignored of USIM doesn’t support the Forward Secrecy extension. The peer determines whether it supports and selects the EAP-AKA' FS extension offered by the server. If yes, then it will respond with AT_PUB_ECDHE and MAC. If not, it will ignore AT_PUB_ECDHE. If the peer wants to participate in FS extension, it will then generate its ECDH key pair, calculate a shared key based on its private key and server public key. The server will receive the RES from peer and AT_PUB_ECDHE. The shared key will be generated both in the peer and the server with key pairs exchanged, and later master key is also generated.
 
 ~~~
 MK_ECDHE = PRF'(IK'| CK'|SHARED_SECRET,"EAP-AKA' FS"|Identity)
@@ -99,9 +101,9 @@ MK_ECDHE = PRF'(IK'| CK'|SHARED_SECRET,"EAP-AKA' FS"|Identity)
 
 # Hybrid Enhancements by Design
 
-We suggest the following changes and enhancements:
+This specification defines the following extensions to EAP-AKA' FS:
 
-- A new attribute, AT_PUB_HYBRID, is defined to carry the public key, which is the concatenation of traditional and PQC KEM public keys from the EAP server. The AT_PUB_HYBRID attribute will carry the encapsulated key, which is formed by concatenating the encapsulated key (enc) from the traditional KEM algorithm and the ciphertext (ct) from the PQC KEM Encapsulation function from the EAP peer.
+- A new attribute, AT_PUB_HYBRID, is defined to carry the public key, which is the concatenation of traditional and PQC KEM public keys from the EAP server. The AT_PUB_HYBRID attribute carries the encapsulated key, which is formed by concatenating the encapsulated key (enc) from the traditional KEM algorithm and the ciphertext (ct) from the PQC KEM Encapsulation function from the EAP peer.
 
 - The AT_KDF_FS attribute is updated to indicate the PQ/T Hybrid KEM in HPKE and HKDF for generating the Hybrid Master Key MK_HYBRID.
 
@@ -220,7 +222,7 @@ We outline the following key steps in the protocol:
 
 - Server generates the PQC KEM Public key(pq_PK), private key (pq_SK) pair and the ECDH public key (trad_PK), private key (trad_SK) pair. The server will generate and send the EAP AKA' Authentication Vector (AV).
 
-- The server will store the expected response XRES, the ECDH private key trad_SK and the PQC KEM private key pq_SK. The server will forward the EAP AKA' AV to peer along with pq_PK and trad_PK.
+- The server associates the expected response XRES, the ECDH private key trad_SK and the PQC KEM private key pq_SK with the current EAP session. The server will forward the EAP AKA' AV to peer along with pq_PK and trad_PK.
 
 - The USIM will validate the AUTH received, also verifies the MAC. After the verification is successful and if the peer also supports the Forward secrecy, peer will invoke Encapsulate using concat(pq_PK, trad_PK) as defined in section 5.4 of {{?I-D.irtf-cfrg-hybrid-kems}}.
 
@@ -244,6 +246,8 @@ The generated ss from Decapsulate is the hybrid shared secret key derived from P
 ~~~
 
 where, pkR is concatenation of PQC KEM and traditional public keys of the receiver, ct is concatenation of the ciphertext from the PQC KEM and encapsulated key from ECDH; the Encapsulate() function is perfomed by the peer only.
+
+For each EAP-AKA' authentication exchange in which the hybrid forward-secrecy extension is selected, the server MUST generate a new ephemeral PQC KEM key pair and a new ephemeral traditional key pair. These ephemeral key pairs MUST NOT be reused across authentication exchanges.
 
 # Extensions to EAP-AKA' FS
 
@@ -275,7 +279,7 @@ where, pkR is concatenation of PQC KEM and traditional public keys of the receiv
    
    Length:
    
-   A 2-byte unsigned integer indicating the total length of the attribute in bytes, including the Type, Reserved, Length, and Value fields, as well as any padding. The length is expressed in multiples of 4 bytes.
+   A 2-byte unsigned integer indicating the total length of the attribute, including the Type, Reserved, Length, and Value fields, as well as any padding. The length is expressed as the number of bytes, rounded up to the next highest multiple of 4 bytes.
 
    This differs from the attribute format used in EAP-AKA {{!RFC4187}}, where the Length field is 1 byte. The modification is necessary because PQ/T Hybrid KEM public keys, such as X25519 and ML-KEM-768 (e.g., X-Wing), would exceed the 1024-byte limit imposed by the original EAP-AKA format.
 
@@ -288,15 +292,15 @@ where, pkR is concatenation of PQC KEM and traditional public keys of the receiv
          and the encapsulated key (enc) from the traditional KEM algorithm and from the 
          EAP peer.
 
-   Because the length of the attribute must be a multiple of 4 bytes, the sender pads the Value field with zero bytes when necessary. To retain the security of the keys, the sender SHALL generate a fresh value for each run of the protocol.
+   Because the length of the attribute must be a multiple of 4 bytes, the sender pads the Value field with zero bytes when necessary.
 
 # Security Considerations
 
-ML-KEM is IND-CCA2 secure based on multiple analyses. The ML-KEM variant and its underlying components should be selected consistently with the desired security level. For further clarity on the sizes and security levels of ML-KEM variants, please refer to the tables in Sections 12 and 13 of {{?I-D.ietf-pquip-pqc-engineers}}.
+For a discussion of the security properties of ML-KEM, including its IND-CCA security properties and the security levels of the ML-KEM parameter sets, see Sections 12 and 13 of {{RFC9958}}. Implementations MUST use the ML-KEM parameter set specified by the negotiated hybrid algorithm identified by AT_KDF_FS.
 
-The security of the ML-KEM algorithm depends on a high-quality pseudo-random number generator. For further discussion on random number generation, see {{?RFC4086}}.
+Implementations MUST use a cryptographically secure random number generator with sufficient entropy when generating ephemeral ML-KEM and traditional key pairs. Randomness used for key generation MUST satisfy the requirements of the underlying cryptographic algorithms. Guidance on generating cryptographic randomness is provided in {{RFC4086}}.
 
-In general, good cryptographic practice dictates that a given ML-KEM key pair should be used in only one EAP session. This practice mitigates the risk that compromising one EAP session will not compromise the security of another EAP session and is essential for maintaining forward security.
+An implementation MUST NOT retain ephemeral private keys beyond their required session lifetime. Subsequent compromise of retained ephemeral private-key material can enable recovery of the hybrid shared secret for recorded authentication exchanges, depending on the security of the remaining hybrid component.
 
 For security properties of traditional ECDHE for EAP-AKA FS, see section 7 of {{RFC9678}}. The overall Hybrid scheme needs to be IND-CCA2 robust; i.e., atleast one of the schemes should be IND-CCA2 secure.
 
