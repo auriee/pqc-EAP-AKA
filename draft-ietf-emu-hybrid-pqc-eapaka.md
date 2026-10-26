@@ -300,7 +300,7 @@ For a discussion of the security properties of ML-KEM, including its IND-CCA sec
 
 Implementations MUST use a cryptographically secure random number generator with sufficient entropy when generating ephemeral ML-KEM and traditional key pairs. Randomness used for key generation MUST satisfy the requirements of the underlying cryptographic algorithms. Guidance on generating cryptographic randomness is provided in {{RFC4086}}.
 
-An implementation MUST NOT retain ephemeral private keys beyond their required session lifetime. Subsequent compromise of retained ephemeral private-key material can enable recovery of the hybrid shared secret for recorded authentication exchanges, depending on the security of the remaining hybrid component.
+An implementation MUST NOT retain ephemeral private keys beyond their required session lifetime. Ephemeral private keys are used for both traditional and PQ KEM; Ephemeral private keys for both algorithms and the seed for PQC KEM must be removed immediately after the shared secret is derived. Subsequent compromise of retained ephemeral private-key material can enable recovery of the hybrid shared secret for recorded authentication exchanges, depending on the security of the remaining hybrid component.
 
 For security properties of traditional ECDHE for EAP-AKA FS, see section 7 of {{RFC9678}}. The overall Hybrid scheme needs to be IND-CCA2 robust; i.e., atleast one of the schemes should be IND-CCA2 secure.
 
