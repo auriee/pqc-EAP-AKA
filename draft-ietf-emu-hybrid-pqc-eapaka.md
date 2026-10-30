@@ -344,4 +344,4 @@ The hybrid KEMs are defined in Section 4 of {{I-D.ietf-hpke-pq}}.
 
 # Acknowledgements
 
-This draft leverages text from {{RFC9678}}.
+This draft leverages text from {{RFC9678}}. The authors thank Wang Guilin, John Mattsson, Heikki Vatiainen and Alan DeKok for their contributions to this specification.
