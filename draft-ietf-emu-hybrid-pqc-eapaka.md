@@ -109,13 +109,13 @@ This specification defines the following extensions to EAP-AKA' FS:
 
 - New AT_KDF_FS values identify the hybrid KEMs ({{iana-kdf}}) used to derive the Hybrid Master Key MK_HYBRID.
 
-- The server lists the hybrid KEM values after an ECDHE value in AT_KDF_FS and sends AT_PUB_HYBRID only after the peer selects a hybrid KEM ({{negotiation}}).
+- A server that offers ECDHE lists the hybrid KEM values after an ECDHE value in AT_KDF_FS and sends AT_PUB_HYBRID only after the peer selects a hybrid KEM ({{negotiation}}).
 
 # Message Fragmentation and Reassembly {#frag}
 
 For all hybrid KEMs registered in this document, AT_PUB_HYBRID exceeds the 1020-octet limit for EAP-AKA extensions in Section 8 of {{RFC4187}}. AT_PUB_HYBRID is therefore fragmented using AT_FRAGMENT, as specified in {{I-D.ietf-emu-pqc-eapaka}}.
 
-AT_FRAGMENT MUST NOT be sent in an AKA'-Challenge message until the peer has selected a hybrid KEM ({{negotiation}}).
+When the server offers ECDHE, AT_FRAGMENT is sent in AKA'-Challenge messages only after the peer has selected a hybrid KEM ({{negotiation}}).
 
 AKA'-Identity messages are not protected by AT_MAC. If AT_FRAGMENT is used in any AKA'-Identity message, AT_CHECKCODE MUST be included in the EAP-Request/AKA'-Challenge carrying AT_PUB_HYBRID and in the EAP-Response/AKA'-Challenge carrying AT_RES. Section 10.13 of {{RFC4187}} requires this because AT_FRAGMENT is an attribute not defined in {{RFC4187}}.
 
@@ -123,7 +123,7 @@ AKA'-Identity messages are not protected by AT_MAC. If AT_FRAGMENT is used in an
 
 AT_PUB_HYBRID and AT_FRAGMENT use a 2-octet Length field. Implementations that do not support this document parse a 1-octet Length field, as specified in {{RFC4187}}, and reject a message containing these attributes, even though their Type values are in the skippable range.
 
-These attributes are therefore sent only after the peer has selected a hybrid KEM, using the AT_KDF_FS change procedure in Section 6.2 of {{RFC9678}}:
+When the server offers ECDHE, these attributes are sent only after the peer has selected a hybrid KEM, using the AT_KDF_FS change procedure in Section 6.2 of {{RFC9678}}:
 
 1. In the first EAP-Request/AKA'-Challenge, the server lists an ECDHE value from {{RFC9678}} as the first AT_KDF_FS attribute, followed by the hybrid KEM values, and includes AT_PUB_ECDHE. The server MUST NOT include AT_PUB_HYBRID or AT_FRAGMENT in this message.
 
@@ -132,6 +132,8 @@ These attributes are therefore sent only after the peer has selected a hybrid KE
 3. A peer that supports this document and one of the offered hybrid KEMs MUST request it. Its EAP-Response/AKA'-Challenge contains only AT_KDF_FS with the selected value. The peer does not run the AKA algorithm on this message.
 
 4. The server re-sends the EAP-Request/AKA'-Challenge with the selected value as the first AT_KDF_FS attribute, followed by the original list, and with AT_PUB_HYBRID instead of AT_PUB_ECDHE. The peer verifies the AT_KDF_FS list as specified in Section 6.2 of {{RFC9678}}.
+
+A server that does not offer ECDHE lists its preferred hybrid KEM value first in AT_KDF_FS and includes AT_PUB_HYBRID, using AT_FRAGMENT if needed, in the first EAP-Request/AKA'-Challenge, as specified in {{RFC9678}}. Legacy and {{RFC9678}}-only peers cannot parse AT_PUB_HYBRID and fail authentication with such a server.
 
 Either side MAY require a hybrid KEM by local policy. A server that requires a hybrid KEM and finds that the peer did not select one MUST behave as if authentication failed. A peer that requires a hybrid KEM and finds no hybrid KEM value in AT_KDF_FS MUST behave as if AUTN were incorrect. This follows Section 6.5.4 of {{RFC9678}}.
 
